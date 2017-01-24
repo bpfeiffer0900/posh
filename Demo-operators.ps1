@@ -115,13 +115,34 @@ $d
 $d -is [datetime]
 $d -as [datetime]
 
-
+#even better set the type from the very beginning
+[datetime]$d = Read-host "Enter an expiration date"
+$d
 
 #endregion
 
 
 #region Type Operators
+1..10
+90..75
+1..10 | foreach {
+    Write-host "Adding JoeTest-$_" -ForegroundColor Magenta
+    #net user "JoeTest-$_" "Password" /add /domain   
+}
+$cmd = "get-service"
+$cmd
+&$cmd
 
+#or use with scriptblocks
+$sb = {get-service w* | where {$_.status -eq 'stopped'}}
+&$sb
+
+1kb
+1mb
+2.3MB + 4.2GB
+(Get-CIMInstance win32_logicaldisk -Filter "deviceid='c:'" -Property Freespace).Freespace/1gb
+#combine for a quick and dirty disk check
+$df = {(Get-CimInstance win32_logicaldisk -Filter "deviceid='c:'" -Property Freespace).Freespace/1gb}
 
 #endregion
 
@@ -133,6 +154,21 @@ $d -as [datetime]
 
 
 #region Split/Join
+$t = "Powershell will rule the world"
+-split $t
 
+$n = "alice;bob;carol;david"
+$n | gm
+$n.split(";")
+$names = $n -split ";"
+$names
+foreach ($name in $names) {
+    Write-host "Creating folder for $name" -ForegroundColor Green
+    mkdir "C:\users\$name" -Whatif
+}
+
+$parts = 7,"BK","**","us",3
+$pass = -join $parts
+$parts -join "~"
 
 #endregion
