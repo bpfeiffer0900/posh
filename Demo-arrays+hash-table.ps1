@@ -57,3 +57,5 @@ $d = $d | where {$_ -ge 100}
 $dcs = "CHI-DC01","CHI-DC02","CHI-DC03"
 $service = "wuauserv","winmgmt"
 
+
+#end region
