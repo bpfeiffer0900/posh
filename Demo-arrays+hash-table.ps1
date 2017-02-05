@@ -81,3 +81,94 @@ $f=@{}
 
 #adding to it
 $f.Add("Name","Jeff")
+$f.Add("Company","Globamantics")
+$f.Add("Office","Evanston")
+$f
+
+#changing an items
+$f.Office
+$f.Office = "Chicago"
+
+#keys must be unique
+$f.Add("Name","Jane")
+$f.ContainsKey("Name")
+
+#removing an items
+$f.remove("name")
+$f
+
+#group-object can create a hash table
+$source = get-eventlog system -newest 100 | group Source -AsHashTable
+$source
+
+#get a specific entry
+$source.Eventlog
+
+#handles names with spaces
+$source.'Service Controler Manager'
+
+#this value is an array of event log objects
+$source.Eventlog[0..3]
+$source.Eventlog[0].message
+
+#using GetEnumerator()
+$source | Get-Member
+$source.GetEnumerator() | Get-Member
+
+#this will fail
+$source | sort Name | select -first 5
+
+#heres the correct approach
+$source.GetEnumerator()| Sort Name | select -frist 5
+
+#or another thing you might want to try. This will fail
+$source | where {$_.name -match "winlogon"}
+
+#although, you could do this:
+$source.keys | where {$_ -match "winlogon"} | foreach { $source.Item($_)}
+
+#but this is a little easier and slightly faster
+$source.GetEnumerator() | where {$_.name -match "winlogon"} | select -expand value
+
+#hash tables are unordered
+$hash = @{
+    Name = "Jeff"
+    Company = "Contoso"
+    Office = "Holland"
+    Computer = $env:COMPUTERNAME
+    OS = (get-ciminstance Win32_OperatingSystem -Property Caption).Caption
+}
+$hash
+
+#hashtables as obkect properties
+$os = Get-CimInstance Win32_OperatingSystem
+$cs = Get-CimInstance Win32_ComputerSystem
+
+$properties = [ordered]@{
+    Cpmputername = $os.CSName
+    MemoryMB = $cs.TotalPhysicalMemory/1mb -As [int]
+    LastBoot = $os.LastBootUpTime
+}
+
+New-Object -TypeName psobject -Property $properties
+
+#hashtables as custom objects
+[pscustomobject]$properties
+
+#a larger examples
+#assume computers all running Powershell 3.0
+$computers = $env:COMPUTERNAME, "chi-dc01","chi-dc03"
+$data = foreach ($computer in $computers) {
+    #simplified without any real error handling
+    $os = Get-CimInstance win32_OperatingSystem -ComputerName $computers
+    $cs = Get-CimInstance Win32_ComputerSystem -ComputerName $computers
+    $cdrive = Get-CimInstance Win32_LogicalDisk -filter "deviceid='C:'"
+
+    [PSCustomObject][ordered]@{}
+}
+
+$data
+#analyze the data
+$data | sort runtime | select computername,runtime
+
+
