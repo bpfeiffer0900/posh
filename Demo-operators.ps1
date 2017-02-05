@@ -172,3 +172,65 @@ $pass = -join $parts
 $parts -join "~"
 
 #endregion
+
+#demo hashtables
+
+#Creating
+$e = @{Name="Jeff";Title="MVP";Computer=$env:COMPUTERNAME}
+$e
+
+#this is its own objects
+$e | gm
+
+#enumerating key
+$e.Keys
+
+#reference elements
+$e.Item("computer")
+$e.computer
+
+#creating an empty hash table
+$f=@{}
+
+#addin to it
+$f.Aaa("Name","Jeff")
+$f.Add("Company","Globomantics")
+$f.Add("Office","Evanston")
+
+#changing an Item
+$f.Office
+$f.Office = "Chicago"
+$f
+
+#keys must be unique
+$f.add("Name","jane")
+$f.ContainsKey("name")
+
+#removing an Item
+$f.Remove("name")
+$f
+
+#group-object can create a hash table
+$source = get-eventlog system, =newest 100
+group source -AsHashTable
+$source
+
+#get a specific entry
+$source.Eventlog
+
+#handle names with spaces
+$source.'Service Control Manager'
+
+#this value is an array of event log objects
+$source.Eventlog[0..3]
+$source.Eventlog[0].message
+
+#using GetEnumerator()
+$source | Get-Member
+$source.GetEnumerator() | Get-Member
+
+#this will fail
+$source | sort name | Select -first 5
+
+#heres another appraoch
+$source.GetEnumerator() | sort name | select -first 5

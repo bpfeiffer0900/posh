@@ -59,3 +59,25 @@ $service = "wuauserv","winmgmt"
 
 
 #end region
+
+#demo Hash Tables
+
+#creating hash table (Key value pair)
+$e = @{Name="Jeff";Title="MVP";Computer=$env:COMPUTERNAME}
+$e
+
+#this is its own objects
+$e = gm
+
+#enumerating keys
+$e.keys
+
+#referencing elements
+$e.Item("computer")
+$e.computer
+
+#creating an empty hash table
+$f=@{}
+
+#adding to it
+$f.Add("Name","Jeff")
