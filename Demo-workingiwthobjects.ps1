@@ -41,3 +41,58 @@ $files | Add-Member Noteproperty Computername $env:computername
 $files | sort Size –desc | Select FullName,Size,FileAge*,Computername –first 10
 
 #endregion
+
+#region creating new objects
+
+#using New-PSObject
+#purely for demonstration purposes
+$dt = new-object system.datetime 2014,12,31
+$dt
+
+#using a type accelerator is better
+[datetime]$d = "12/31/2014"
+$d
+
+#creating a custom object
+$h = [ordered]@{
+    Computername=$env:COMPUTERNAME
+    User=$env:USERNAME
+    Processes = (Get-Process).count
+    Running = Get-Service | where {$_.status -eq 'running'}
+}
+
+#using [pscustomobject]
+[pscustomobject]$h
+
+#putting it all together
+
+$computers = "chi-dc01","chi-dc02"
+$DCS = foreach ($computer in $computers) {
+    $ntds = dir \\$computer\admin$\ntds\ntds.dit
+    $os = Get-wmiobject win32_operatingsystem -Computername $computer
+    $DSlog = Get-Eventlogs 'Directory Service' -newest 20 -computer $computer
+    $netlogon = Get-wmiobject win32_share -filter "name='Netlogon'" -ComputerName $computer
+    $sysvol = get-wmiobject win32_share -filter "name='Sysvol'" -Computer $computer
+
+    #create a custom object for each domain controller
+    [System.Management.Automation.PSCustomObject][ordered]@{
+        Computername = $os.csname
+        OperatingSystem = $os.caption
+        ServicePack = $os.servicepackmajorversion
+        NTDS = $ntds
+        DSlog = $DSlog
+        Netlogon = $netlogon.path
+        Sysvol = $sysvol.path
+    }
+}
+
+$DCS
+
+$dcs | select -expand NTDS
+
+#or expand like This
+$dcs.dslog | where {$_.entrytype -ne 'information'} | select Timegenerate,Entrytype,Source,Message,
+@{N="Computername";E={$_.machinename}} | out-gridview
+
+#endregion
+
